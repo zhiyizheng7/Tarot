@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
 import { DrawnCard, getCardWithData } from "@/lib/tarot";
 import { Aspect, buildReadingPrompt } from "@/lib/prompts";
 import { getInterpretation } from "@/lib/gemini";
 import { isSupportedAspect, validateQuestion } from "@/lib/validation";
+import { authOptions } from "@/lib/auth";
+import { getSupabaseClient } from "@/lib/db";
 
 interface ReadingRequest {
   question: string;
   aspect: Aspect;
   cards: DrawnCard[];
+  threadId?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userEmail = session?.user?.email;
+
+    if (!userEmail) {
+      return NextResponse.json({ error: "請先登入後再開始占卜。" }, { status: 401 });
+    }
+
     const body: ReadingRequest = await request.json();
-    const { question, aspect, cards } = body;
+    const { question, aspect, cards, threadId } = body;
 
     if (!question || !aspect || !cards || cards.length !== 3) {
       return NextResponse.json(
@@ -38,7 +49,74 @@ export async function POST(request: NextRequest) {
     const prompt = buildReadingPrompt(cardsWithData, question, aspect);
     const interpretation = await getInterpretation(prompt);
 
-    return NextResponse.json({ interpretation });
+    const supabase = getSupabaseClient();
+    let resolvedThreadId = threadId;
+
+    if (resolvedThreadId) {
+      const { data: thread, error: threadCheckError } = await supabase
+        .from("reading_threads")
+        .select("id")
+        .eq("id", resolvedThreadId)
+        .eq("user_id", userEmail)
+        .single();
+
+      if (threadCheckError || !thread) {
+        resolvedThreadId = undefined;
+      }
+    }
+
+    if (!resolvedThreadId) {
+      const { data: insertedThread, error: insertThreadError } = await supabase
+        .from("reading_threads")
+        .insert({
+          user_id: userEmail,
+          title: question.slice(0, 32),
+        })
+        .select("id")
+        .single();
+
+      if (insertThreadError || !insertedThread) {
+        throw new Error(insertThreadError?.message ?? "建立占卜對話失敗");
+      }
+
+      resolvedThreadId = insertedThread.id;
+    }
+
+    const { error: userMessageError } = await supabase.from("reading_messages").insert({
+      thread_id: resolvedThreadId,
+      role: "user",
+      content: question,
+      aspect,
+      cards,
+    });
+
+    if (userMessageError) {
+      throw new Error(userMessageError.message);
+    }
+
+    const { error: assistantMessageError } = await supabase
+      .from("reading_messages")
+      .insert({
+        thread_id: resolvedThreadId,
+        role: "assistant",
+        content: interpretation,
+      });
+
+    if (assistantMessageError) {
+      throw new Error(assistantMessageError.message);
+    }
+
+    const { error: updateThreadError } = await supabase
+      .from("reading_threads")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", resolvedThreadId)
+      .eq("user_id", userEmail);
+
+    if (updateThreadError) {
+      throw new Error(updateThreadError.message);
+    }
+
+    return NextResponse.json({ interpretation, threadId: resolvedThreadId });
   } catch (error) {
     console.error("Reading API error:", error);
     const message =
