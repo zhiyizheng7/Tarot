@@ -1,4 +1,4 @@
-import { drawCards, type DrawnCard } from "@/lib/tarot";
+import { drawCards } from "@/lib/tarot";
 
 describe("drawCards", () => {
   it("should return exactly 3 cards", () => {

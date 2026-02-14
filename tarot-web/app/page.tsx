@@ -3,12 +3,13 @@
 import { useState, useCallback, useMemo } from "react";
 import { drawCards } from "@/lib/tarot";
 import { Aspect } from "@/lib/prompts";
+import { validateQuestion } from "@/lib/validation";
 import QuestionForm from "@/components/QuestionForm";
 import CardSpread from "@/components/CardSpread";
 import ReadingResult from "@/components/ReadingResult";
 import majorArcana from "@/data/major_arcana.json";
 
-type Phase = "input" | "cards" | "reading";
+type Phase = "IDLE" | "THINKING" | "SHUFFLING" | "COMPLETED";
 
 interface DrawnCardWithName {
   cardId: number;
@@ -17,36 +18,48 @@ interface DrawnCardWithName {
   orientation: "upright" | "reversed";
 }
 
-// Generate deterministic star positions so they don't shift on re-render
 function generateStars(count: number) {
   const stars = [];
-  // Use a simple seeded approach with fixed values
   for (let i = 0; i < count; i++) {
     const x = ((i * 137.508) % 100).toFixed(1);
     const y = ((i * 73.137) % 100).toFixed(1);
     const duration = (2 + (i % 5)).toFixed(1);
     const delay = ((i * 0.7) % 4).toFixed(1);
-    const opacity = (0.3 + (i % 6) * 0.1).toFixed(1);
+    const opacity = (0.2 + (i % 6) * 0.1).toFixed(1);
     stars.push({ x, y, duration, delay, opacity });
   }
   return stars;
 }
 
+const PHASE_LABEL: Record<Phase, string> = {
+  IDLE: "待命",
+  THINKING: "提問中",
+  SHUFFLING: "洗牌解讀中",
+  COMPLETED: "已完成",
+};
+
 export default function Home() {
-  const [phase, setPhase] = useState<Phase>("input");
+  const [phase, setPhase] = useState<Phase>("IDLE");
   const [question, setQuestion] = useState("");
-  const [aspect, setAspect] = useState<Aspect>("core");
+  const [aspect, setAspect] = useState<Aspect>("love");
   const [drawnCards, setDrawnCards] = useState<DrawnCardWithName[]>([]);
   const [reading, setReading] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const stars = useMemo(() => generateStars(50), []);
+  const stars = useMemo(() => generateStars(48), []);
 
   function handleSubmit(q: string, a: Aspect) {
+    const validation = validateQuestion(q);
+    if (!validation.valid) {
+      setReading(validation.message ?? "問題格式不正確");
+      setPhase("COMPLETED");
+      return;
+    }
+
     setQuestion(q);
     setAspect(a);
+    setPhase("THINKING");
 
-    // Draw cards on client side
     const cards = drawCards();
     const cardsWithNames: DrawnCardWithName[] = cards.map((c) => {
       const cardData = majorArcana.major_arcana.find((m) => m.id === c.cardId)!;
@@ -54,11 +67,10 @@ export default function Home() {
     });
 
     setDrawnCards(cardsWithNames);
-    setPhase("cards");
+    setPhase("SHUFFLING");
   }
 
   const handleAllFlipped = useCallback(async () => {
-    setPhase("reading");
     setIsLoading(true);
 
     try {
@@ -77,28 +89,28 @@ export default function Home() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "API error");
+      if (!res.ok) throw new Error(data.error || "連結星際能量失敗，請重新翻牌。");
       setReading(data.interpretation);
     } catch (err) {
       console.error(err);
-      setReading("解讀過程中發生錯誤，請稍後再試。");
+      setReading("連結星際能量失敗，請重新翻牌。");
     } finally {
       setIsLoading(false);
+      setPhase("COMPLETED");
     }
   }, [question, aspect, drawnCards]);
 
   function handleReset() {
-    setPhase("input");
+    setPhase("IDLE");
     setQuestion("");
-    setAspect("core");
+    setAspect("love");
     setDrawnCards([]);
     setReading(null);
     setIsLoading(false);
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      {/* Star background */}
+    <div className="app-shell relative min-h-screen flex flex-col items-center justify-center px-4 py-12 sm:px-8">
       <div className="star-field">
         {stars.map((s, i) => (
           <div
@@ -115,57 +127,35 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center w-full">
-        {phase === "input" && <QuestionForm onSubmit={handleSubmit} />}
+      <div className="orb orb-left" />
+      <div className="orb orb-right" />
 
-        {phase === "cards" && (
-          <CardSpread cards={drawnCards} onAllFlipped={handleAllFlipped} />
-        )}
+      <div className="relative z-10 flex flex-col items-center w-full gap-6">
+        <div className="phase-tag">狀態：{PHASE_LABEL[phase]}</div>
 
-        {phase === "reading" && (
+        {(phase === "IDLE" || phase === "THINKING") && <QuestionForm onSubmit={handleSubmit} />}
+
+        {phase === "SHUFFLING" && <CardSpread cards={drawnCards} onAllFlipped={handleAllFlipped} />}
+
+        {phase === "COMPLETED" && (
           <div className="flex flex-col items-center gap-8 w-full">
-            {/* Show cards in mini form */}
             <div className="flex flex-wrap justify-center gap-4">
               {drawnCards.map((card) => (
-                <div
-                  key={card.cardId}
-                  className="text-center px-4 py-2 rounded-lg"
-                  style={{
-                    background: "var(--card-bg)",
-                    border: "1px solid var(--card-border)",
-                  }}
-                >
-                  <div
-                    className="text-xs mb-1"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
+                <div key={`${card.position}-${card.cardId}`} className="mini-card text-center px-4 py-2 rounded-lg">
+                  <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
                     {card.position}
                   </div>
-                  <div
-                    className="text-sm font-medium"
-                    style={{ color: "var(--gold)" }}
-                  >
+                  <div className="text-sm font-medium" style={{ color: "var(--accent-main)" }}>
                     {card.name}
                   </div>
-                  <div
-                    className="text-xs"
-                    style={{
-                      color:
-                        card.orientation === "upright" ? "#a8e6a3" : "#e6a3a8",
-                    }}
-                  >
+                  <div className="text-xs" style={{ color: card.orientation === "upright" ? "#8de3bd" : "#ff9f7f" }}>
                     {card.orientation === "upright" ? "正位" : "逆位"}
                   </div>
                 </div>
               ))}
             </div>
 
-            <ReadingResult
-              reading={reading}
-              isLoading={isLoading}
-              onReset={handleReset}
-            />
+            <ReadingResult reading={reading} isLoading={isLoading} onReset={handleReset} />
           </div>
         )}
       </div>

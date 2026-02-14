@@ -40,8 +40,7 @@ export function drawCards(): DrawnCard[] {
 }
 
 export function getCardWithData(
-  drawn: DrawnCard,
-  aspect: "love" | "career" | "core"
+  drawn: DrawnCard
 ): CardWithData {
   const card = majorArcana.major_arcana.find((c) => c.id === drawn.cardId)!;
   const meanings = card[drawn.orientation];

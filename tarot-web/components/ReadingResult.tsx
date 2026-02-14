@@ -6,6 +6,43 @@ interface ReadingResultProps {
   onReset: () => void;
 }
 
+function renderLine(line: string, index: number) {
+  const trimmed = line.trim();
+  if (!trimmed) {
+    return <div key={`blank-${index}`} className="h-2" />;
+  }
+
+  if (trimmed.startsWith("### ")) {
+    return (
+      <h3 key={index} className="result-h3">
+        {trimmed.slice(4)}
+      </h3>
+    );
+  }
+
+  if (trimmed.startsWith("## ")) {
+    return (
+      <h2 key={index} className="result-h2">
+        {trimmed.slice(3)}
+      </h2>
+    );
+  }
+
+  if (trimmed.startsWith("- ")) {
+    return (
+      <p key={index} className="result-line">
+        • {trimmed.slice(2)}
+      </p>
+    );
+  }
+
+  return (
+    <p key={index} className="result-line">
+      {trimmed}
+    </p>
+  );
+}
+
 export default function ReadingResult({
   reading,
   isLoading,
@@ -14,14 +51,8 @@ export default function ReadingResult({
   if (isLoading) {
     return (
       <div className="fade-in flex flex-col items-center gap-6 py-8">
-        <div
-          className="pulse-glow w-16 h-16 rounded-full flex items-center justify-center"
-          style={{
-            background: "var(--card-bg)",
-            border: "1px solid var(--card-border)",
-          }}
-        >
-          <span className="text-2xl" style={{ color: "var(--gold)" }}>
+        <div className="pulse-glow w-16 h-16 rounded-full flex items-center justify-center loading-badge">
+          <span className="text-2xl" style={{ color: "var(--accent-main)" }}>
             ✦
           </span>
         </div>
@@ -39,49 +70,15 @@ export default function ReadingResult({
 
   if (!reading) return null;
 
-  // Simple markdown-like rendering: bold, headings, line breaks
-  const rendered = reading
-    .split("\n")
-    .map((line) => {
-      // Headings (## or ** at line start)
-      if (line.startsWith("## ")) {
-        return `<h3 style="color: var(--gold); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.15rem;">${line.slice(3)}</h3>`;
-      }
-      if (line.startsWith("# ")) {
-        return `<h2 style="color: var(--gold); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.3rem;">${line.slice(2)}</h2>`;
-      }
-      // Bold
-      const withBold = line.replace(
-        /\*\*(.+?)\*\*/g,
-        '<strong style="color: var(--gold);">$1</strong>'
-      );
-      if (!withBold.trim()) return "<br />";
-      return `<p style="margin-bottom: 0.4rem; line-height: 1.8;">${withBold}</p>`;
-    })
-    .join("");
-
   return (
-    <div className="fade-in flex flex-col gap-6 w-full max-w-2xl">
-      {/* Result content */}
-      <div
-        className="rounded-xl p-6 sm:p-8"
-        style={{
-          background: "var(--card-bg)",
-          border: "1px solid var(--card-border)",
-        }}
-      >
-        <div
-          className="text-sm sm:text-base"
-          style={{ color: "var(--text-primary)", lineHeight: 1.8 }}
-          dangerouslySetInnerHTML={{ __html: rendered }}
-        />
+    <div className="fade-in flex flex-col gap-6 w-full max-w-3xl">
+      <div className="result-panel rounded-xl p-6 sm:p-8">
+        <div className="text-sm sm:text-base" style={{ color: "var(--text-primary)", lineHeight: 1.9 }}>
+          {reading.split("\n").map((line, index) => renderLine(line, index))}
+        </div>
       </div>
 
-      {/* Reset button */}
-      <button
-        onClick={onReset}
-        className="btn-gold py-3 rounded-lg text-base cursor-pointer"
-      >
+      <button onClick={onReset} className="btn-gold py-3 rounded-xl text-base cursor-pointer">
         重新占卜
       </button>
     </div>
