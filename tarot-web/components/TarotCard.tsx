@@ -35,80 +35,44 @@ export default function TarotCard({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {/* Position label */}
-      <span
-        className="text-sm tracking-widest uppercase"
-        style={{ color: "var(--text-secondary)" }}
-      >
+      <span className="text-sm tracking-widest uppercase" style={{ color: "var(--text-secondary)" }}>
         {position} · {POSITION_LABEL[position]}
       </span>
 
-      {/* Card */}
       <div className="card-scene tarot-card" style={{ width: 160, height: 260 }}>
         <div className={`card-inner ${showFlip ? "flipped" : ""}`}>
-          {/* Back */}
-          <div
-            className="card-face card-back card-back-pattern"
-            style={{
-              border: "1px solid var(--card-border)",
-            }}
-          />
+          <div className="card-face card-back card-back-pattern" style={{ border: "1px solid var(--panel-border)" }} />
 
-          {/* Front */}
           <div
             className="card-face card-front flex flex-col items-center justify-center gap-3 p-4 text-center"
             style={{
-              background: "linear-gradient(180deg, var(--card-bg) 0%, #120e28 100%)",
-              border: "1px solid var(--gold)",
-              boxShadow: "inset 0 0 30px rgba(212, 175, 55, 0.05)",
+              background: "linear-gradient(180deg, var(--panel-bg) 0%, var(--panel-strong) 100%)",
+              border: "1px solid var(--accent-main)",
+              boxShadow: "inset 0 0 28px rgba(243, 200, 117, 0.08)",
             }}
           >
-            {/* Decorative top */}
-            <span
-              className="text-xs tracking-widest"
-              style={{ color: "var(--gold)", opacity: 0.6 }}
-            >
+            <span className="text-xs tracking-widest" style={{ color: "var(--accent-main)", opacity: 0.7 }}>
               ✦ ✦ ✦
             </span>
 
-            {/* Card name */}
-            <h3
-              className="text-lg font-bold leading-tight"
-              style={{ color: "var(--gold)" }}
-            >
+            <h3 className="text-lg font-semibold leading-tight title-serif" style={{ color: "var(--accent-main)" }}>
               {name}
             </h3>
 
-            {/* Divider */}
-            <div
-              className="w-12 h-px"
-              style={{ background: "var(--gold)", opacity: 0.3 }}
-            />
+            <div className="w-12 h-px" style={{ background: "var(--accent-main)", opacity: 0.38 }} />
 
-            {/* Orientation */}
             <span
               className="text-sm font-medium px-3 py-1 rounded-full"
               style={{
-                color: orientation === "upright" ? "#a8e6a3" : "#e6a3a8",
-                background:
-                  orientation === "upright"
-                    ? "rgba(168, 230, 163, 0.1)"
-                    : "rgba(230, 163, 168, 0.1)",
-                border: `1px solid ${
-                  orientation === "upright"
-                    ? "rgba(168, 230, 163, 0.2)"
-                    : "rgba(230, 163, 168, 0.2)"
-                }`,
+                color: orientation === "upright" ? "#8de3bd" : "#ff9f7f",
+                background: orientation === "upright" ? "rgba(141, 227, 189, 0.12)" : "rgba(255, 159, 127, 0.12)",
+                border: `1px solid ${orientation === "upright" ? "rgba(141, 227, 189, 0.28)" : "rgba(255, 159, 127, 0.28)"}`,
               }}
             >
               {orientationText}
             </span>
 
-            {/* Decorative bottom */}
-            <span
-              className="text-xs tracking-widest"
-              style={{ color: "var(--gold)", opacity: 0.6 }}
-            >
+            <span className="text-xs tracking-widest" style={{ color: "var(--accent-main)", opacity: 0.55 }}>
               ✦
             </span>
           </div>

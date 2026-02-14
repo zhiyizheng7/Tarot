@@ -25,15 +25,16 @@ describe("getInterpretation", () => {
 
     await getInterpretation("test prompt");
 
+    expect(mockFetch).toHaveBeenCalledTimes(1);
     expect(mockFetch).toHaveBeenCalledWith(
       "https://api.example.com/generate?key=test-key",
-      {
+      expect.objectContaining({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: "test prompt" }] }],
         }),
-      }
+      })
     );
   });
 
@@ -48,12 +49,12 @@ describe("getInterpretation", () => {
   it("should throw on non-ok response", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
-      status: 429,
-      text: async () => "Rate limit exceeded",
+      status: 403,
+      text: async () => "Permission denied",
     });
 
     await expect(getInterpretation("prompt")).rejects.toThrow(
-      "Gemini API error (429): Rate limit exceeded"
+      "Gemini API error (403): Permission denied"
     );
   });
 
@@ -68,16 +69,22 @@ describe("getInterpretation", () => {
     );
   });
 
-  it("should throw on missing parts", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        candidates: [{ content: { parts: [] } }],
-      }),
-    });
+  it("should retry once before succeeding", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        text: async () => "Rate limit exceeded",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          candidates: [{ content: { parts: [{ text: "重試成功" }] } }],
+        }),
+      });
 
-    await expect(getInterpretation("prompt")).rejects.toThrow(
-      "Gemini API returned empty response"
-    );
+    const result = await getInterpretation("prompt");
+    expect(result).toBe("重試成功");
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 });

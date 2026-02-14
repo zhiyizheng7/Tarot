@@ -1,11 +1,13 @@
 import { CardWithData } from "./tarot";
 
-export type Aspect = "love" | "career" | "core";
+export type Aspect = "love" | "career" | "wealth" | "relationships" | "growth";
 
 const ASPECT_LABEL: Record<Aspect, string> = {
   love: "感情",
   career: "事業",
-  core: "綜合",
+  wealth: "財運",
+  relationships: "人際",
+  growth: "自我成長",
 };
 
 function formatCard(card: CardWithData, aspect: Aspect): string {
@@ -20,7 +22,18 @@ function formatCard(card: CardWithData, aspect: Aspect): string {
     .join("\n");
 
   const aspectMeaning =
-    aspect === "core" ? card.meaning.core : card.meaning[aspect];
+    aspect === "love"
+      ? card.meaning.love
+      : aspect === "career"
+      ? card.meaning.career
+      : card.meaning.core;
+
+  const aspectMeaningLabel =
+    aspect === "love"
+      ? "感情牌義"
+      : aspect === "career"
+      ? "事業牌義"
+      : `${ASPECT_LABEL[aspect]}參考牌義`;
 
   return `【${card.position}】${card.name}（${orientationText}）
   元素：${card.element}
@@ -30,7 +43,8 @@ ${symbolLines}
   色彩意涵：
 ${colorLines}
   核心牌義：${card.meaning.core}
-  ${aspect !== "core" ? `${ASPECT_LABEL[aspect]}牌義：${aspectMeaning}\n  ` : ""}行動建議：${card.meaning.action_advice}`;
+  ${aspectMeaningLabel}：${aspectMeaning}
+  行動建議：${card.meaning.action_advice}`;
 }
 
 export function buildReadingPrompt(
@@ -52,11 +66,17 @@ ${cardsSection}
 
 --- 解讀要求 ---
 
-請依照以下結構進行分析：
-1. 整體概覽：簡要說明三張牌呈現的整體故事線與能量走向。
-2. 逐牌解析：針對每個時間位置（過去、現在、未來），結合牌面描述、象徵符號與色彩意涵，提供具體且有層次的解讀。
-3. 牌與牌之間的關聯：說明三張牌之間的連結與故事發展脈絡。
-4. 具體行動建議：根據整體牌陣，提供 2-3 條明確可執行的行動建議。
+請嚴格依照以下標題與順序輸出：
+### 全局概述
+### 分項解析（過去）
+### 分項解析（現在）
+### 分項解析（未來）
+### 行動建議
+
+規則：
+- 每一段都要呼應用戶問題中的關鍵詞。
+- 「行動建議」請提供 2-3 條、可立即執行、具體可操作的建議。
+- 不可省略任何段落標題。
 
 語氣要求：溫暖而專業，既有神秘感又具備實用性。避免過於籠統的泛泛之談，請結合牌面細節給出有針對性的解讀。
 請使用繁體中文回答。`;
