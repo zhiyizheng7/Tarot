@@ -55,7 +55,7 @@ export default function QuestionForm({ onSubmit }: QuestionFormProps) {
           className="text-3xl sm:text-5xl font-semibold tracking-wide mb-3 title-serif"
           style={{ color: "var(--accent-main)" }}
         >
-          Arcana Mirror
+          開始提問
         </h1>
         <p style={{ color: "var(--text-secondary)" }} className="text-sm sm:text-base">
           聖三角牌陣 · 過去 · 現在 · 未來

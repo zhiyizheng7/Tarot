@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getSupabaseClient } from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 interface RouteContext {
   params: Promise<{
@@ -19,29 +19,52 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
   const { id: threadId } = await context.params;
 
-  const supabase = getSupabaseClient();
-  const { data: thread, error: threadError } = await supabase
-    .from("reading_threads")
-    .select("id, title, created_at, updated_at")
-    .eq("id", threadId)
-    .eq("user_id", userEmail)
-    .single();
+  const thread = await prisma.readingThread.findFirst({
+    where: {
+      id: threadId,
+      userEmail,
+    },
+    select: {
+      id: true,
+      title: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-  if (threadError || !thread) {
+  if (!thread) {
     return NextResponse.json({ error: "Thread not found" }, { status: 404 });
   }
 
-  const { data: messages, error: messageError } = await supabase
-    .from("reading_messages")
-    .select("id, role, content, aspect, cards, created_at")
-    .eq("thread_id", threadId)
-    .order("created_at", { ascending: true });
+  const messages = await prisma.readingMessage.findMany({
+    where: { threadId },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      role: true,
+      content: true,
+      aspect: true,
+      cards: true,
+      createdAt: true,
+    },
+  });
 
-  if (messageError) {
-    return NextResponse.json({ error: messageError.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ thread, messages: messages ?? [] });
+  return NextResponse.json({
+    thread: {
+      id: thread.id,
+      title: thread.title,
+      created_at: thread.createdAt.toISOString(),
+      updated_at: thread.updatedAt.toISOString(),
+    },
+    messages: messages.map((message) => ({
+      id: message.id,
+      role: message.role,
+      content: message.content,
+      aspect: message.aspect,
+      cards: message.cards,
+      created_at: message.createdAt.toISOString(),
+    })),
+  });
 }
 
 export async function DELETE(_request: NextRequest, context: RouteContext) {
@@ -54,16 +77,12 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
 
   const { id: threadId } = await context.params;
 
-  const supabase = getSupabaseClient();
-  const { error } = await supabase
-    .from("reading_threads")
-    .delete()
-    .eq("id", threadId)
-    .eq("user_id", userEmail);
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  await prisma.readingThread.deleteMany({
+    where: {
+      id: threadId,
+      userEmail,
+    },
+  });
 
   return NextResponse.json({ success: true });
 }

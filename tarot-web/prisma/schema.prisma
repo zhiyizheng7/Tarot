@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ReadingThread {
+  id        String           @id @default(cuid())
+  userEmail String
+  title     String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  messages  ReadingMessage[]
+
+  @@index([userEmail, updatedAt])
+}
+
+model ReadingMessage {
+  id        String        @id @default(cuid())
+  threadId  String
+  role      String
+  content   String        @db.Text
+  aspect    String?
+  cards     Json?
+  createdAt DateTime      @default(now())
+  thread    ReadingThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+}

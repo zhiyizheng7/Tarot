@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getSupabaseClient } from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -11,16 +11,23 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = getSupabaseClient();
-  const { data, error } = await supabase
-    .from("reading_threads")
-    .select("id, title, created_at, updated_at")
-    .eq("user_id", userEmail)
-    .order("updated_at", { ascending: false });
+  const threads = await prisma.readingThread.findMany({
+    where: { userEmail },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ threads: data ?? [] });
+  return NextResponse.json({
+    threads: threads.map((thread) => ({
+      id: thread.id,
+      title: thread.title,
+      created_at: thread.createdAt.toISOString(),
+      updated_at: thread.updatedAt.toISOString(),
+    })),
+  });
 }

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { DrawnCard, getCardWithData } from "@/lib/tarot";
 import { Aspect, buildReadingPrompt } from "@/lib/prompts";
 import { getInterpretation } from "@/lib/gemini";
 import { isSupportedAspect, validateQuestion } from "@/lib/validation";
 import { authOptions } from "@/lib/auth";
-import { getSupabaseClient } from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 interface ReadingRequest {
   question: string;
@@ -49,72 +50,56 @@ export async function POST(request: NextRequest) {
     const prompt = buildReadingPrompt(cardsWithData, question, aspect);
     const interpretation = await getInterpretation(prompt);
 
-    const supabase = getSupabaseClient();
     let resolvedThreadId = threadId;
 
     if (resolvedThreadId) {
-      const { data: thread, error: threadCheckError } = await supabase
-        .from("reading_threads")
-        .select("id")
-        .eq("id", resolvedThreadId)
-        .eq("user_id", userEmail)
-        .single();
+      const thread = await prisma.readingThread.findFirst({
+        where: {
+          id: resolvedThreadId,
+          userEmail,
+        },
+        select: { id: true },
+      });
 
-      if (threadCheckError || !thread) {
+      if (!thread) {
         resolvedThreadId = undefined;
       }
     }
 
     if (!resolvedThreadId) {
-      const { data: insertedThread, error: insertThreadError } = await supabase
-        .from("reading_threads")
-        .insert({
-          user_id: userEmail,
+      const insertedThread = await prisma.readingThread.create({
+        data: {
+          userEmail,
           title: question.slice(0, 32),
-        })
-        .select("id")
-        .single();
-
-      if (insertThreadError || !insertedThread) {
-        throw new Error(insertThreadError?.message ?? "建立占卜對話失敗");
-      }
+        },
+        select: { id: true },
+      });
 
       resolvedThreadId = insertedThread.id;
     }
 
-    const { error: userMessageError } = await supabase.from("reading_messages").insert({
-      thread_id: resolvedThreadId,
-      role: "user",
-      content: question,
-      aspect,
-      cards,
+    await prisma.readingMessage.create({
+      data: {
+        threadId: resolvedThreadId,
+        role: "user",
+        content: question,
+        aspect,
+        cards: cards as unknown as Prisma.InputJsonValue,
+      },
     });
 
-    if (userMessageError) {
-      throw new Error(userMessageError.message);
-    }
-
-    const { error: assistantMessageError } = await supabase
-      .from("reading_messages")
-      .insert({
-        thread_id: resolvedThreadId,
+    await prisma.readingMessage.create({
+      data: {
+        threadId: resolvedThreadId,
         role: "assistant",
         content: interpretation,
-      });
+      },
+    });
 
-    if (assistantMessageError) {
-      throw new Error(assistantMessageError.message);
-    }
-
-    const { error: updateThreadError } = await supabase
-      .from("reading_threads")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", resolvedThreadId)
-      .eq("user_id", userEmail);
-
-    if (updateThreadError) {
-      throw new Error(updateThreadError.message);
-    }
+    await prisma.readingThread.update({
+      where: { id: resolvedThreadId },
+      data: { updatedAt: new Date() },
+    });
 
     return NextResponse.json({ interpretation, threadId: resolvedThreadId });
   } catch (error) {

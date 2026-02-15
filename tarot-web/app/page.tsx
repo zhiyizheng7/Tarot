@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { drawCards, type DrawnCard } from "@/lib/tarot";
 import { Aspect } from "@/lib/prompts";
@@ -9,6 +10,14 @@ import QuestionForm from "@/components/QuestionForm";
 import CardSpread from "@/components/CardSpread";
 import ReadingResult from "@/components/ReadingResult";
 import majorArcana from "@/data/major_arcana.json";
+
+const TarotHero = dynamic(() => import("@/components/webgl/TarotHero"), {
+  ssr: false,
+});
+
+const GlobalNebula = dynamic(() => import("@/components/webgl/GlobalNebula"), {
+  ssr: false,
+});
 
 type Phase = "IDLE" | "THINKING" | "SHUFFLING" | "COMPLETED";
 
@@ -201,7 +210,9 @@ export default function Home() {
   }
 
   return (
-    <div className="app-shell relative min-h-screen flex items-start justify-center px-4 py-10 sm:px-8">
+    <div className="app-shell relative min-h-screen px-4 py-8 sm:px-8">
+      <GlobalNebula />
+
       <div className="star-field">
         {stars.map((s, i) => (
           <div
@@ -218,100 +229,101 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="orb orb-left" />
-      <div className="orb orb-right" />
+      <div className="relative z-10 mx-auto w-full max-w-6xl flex flex-col gap-6">
+        <TarotHero />
 
-      <div className="relative z-10 w-full max-w-6xl grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-        <aside className="panel-wrap h-fit">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="title-serif text-lg" style={{ color: "var(--accent-main)" }}>
-              帳號與歷史
-            </h2>
-          </div>
-
-          {status === "authenticated" ? (
-            <>
-              <div className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
-                {session.user?.name ?? session.user?.email}
-              </div>
-              <button className="quick-chip rounded-lg px-3 py-2 text-sm mb-5" onClick={() => signOut()}>
-                登出
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
-                登入後可保存解牌歷史與回看對話。
-              </p>
-              <button className="btn-gold w-full rounded-lg py-2 text-sm" onClick={() => signIn("google")}>Google 登入</button>
-            </>
-          )}
-
-          <div className="mt-4">
-            <div className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
-              我的解牌歷史
+        <div className="webgl-layout grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+          <aside className="panel-wrap h-fit">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="title-serif text-lg" style={{ color: "var(--accent-main)" }}>
+                帳號與歷史
+              </h2>
             </div>
-            <div className="flex flex-col gap-2 max-h-[420px] overflow-auto pr-1">
-              {historyLoading && <div className="text-xs" style={{ color: "var(--text-secondary)" }}>載入中...</div>}
-              {!historyLoading && threads.length === 0 && (
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>尚無歷史紀錄</div>
-              )}
-              {threads.map((thread) => (
-                <div key={thread.id} className="mini-card rounded-lg px-3 py-2">
-                  <button
-                    className="text-left w-full text-sm"
-                    style={{ color: activeThreadId === thread.id ? "var(--accent-main)" : "var(--text-primary)" }}
-                    onClick={() => handleOpenThread(thread.id)}
-                  >
-                    {thread.title}
-                  </button>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-                      {new Date(thread.updated_at).toLocaleString("zh-TW")}
-                    </span>
-                    <button
-                      className="text-[11px]"
-                      style={{ color: "var(--danger)" }}
-                      onClick={() => handleDeleteThread(thread.id)}
-                    >
-                      刪除
-                    </button>
-                  </div>
+
+            {status === "authenticated" ? (
+              <>
+                <div className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
+                  {session.user?.name ?? session.user?.email}
                 </div>
-              ))}
-            </div>
-          </div>
-        </aside>
+                <button className="quick-chip rounded-lg px-3 py-2 text-sm mb-5" onClick={() => signOut()}>
+                  登出
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
+                  登入後可保存解牌歷史與回看對話。
+                </p>
+                <button className="btn-gold w-full rounded-lg py-2 text-sm" onClick={() => signIn("google")}>Google 登入</button>
+              </>
+            )}
 
-        <main className="flex flex-col items-center w-full gap-6">
-          <div className="phase-tag">狀態：{PHASE_LABEL[phase]}</div>
-
-          {(phase === "IDLE" || phase === "THINKING") && <QuestionForm onSubmit={handleSubmit} />}
-
-          {phase === "SHUFFLING" && <CardSpread cards={drawnCards} onAllFlipped={handleAllFlipped} />}
-
-          {phase === "COMPLETED" && (
-            <div className="flex flex-col items-center gap-8 w-full">
-              <div className="flex flex-wrap justify-center gap-4">
-                {drawnCards.map((card) => (
-                  <div key={`${card.position}-${card.cardId}`} className="mini-card text-center px-4 py-2 rounded-lg">
-                    <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
-                      {card.position}
-                    </div>
-                    <div className="text-sm font-medium" style={{ color: "var(--accent-main)" }}>
-                      {card.name}
-                    </div>
-                    <div className="text-xs" style={{ color: card.orientation === "upright" ? "#8de3bd" : "#ff9f7f" }}>
-                      {card.orientation === "upright" ? "正位" : "逆位"}
+            <div className="mt-4">
+              <div className="text-sm mb-2" style={{ color: "var(--text-secondary)" }}>
+                我的解牌歷史
+              </div>
+              <div className="flex flex-col gap-2 max-h-[420px] overflow-auto pr-1">
+                {historyLoading && <div className="text-xs" style={{ color: "var(--text-secondary)" }}>載入中...</div>}
+                {!historyLoading && threads.length === 0 && (
+                  <div className="text-xs" style={{ color: "var(--text-secondary)" }}>尚無歷史紀錄</div>
+                )}
+                {threads.map((thread) => (
+                  <div key={thread.id} className="mini-card rounded-lg px-3 py-2">
+                    <button
+                      className="text-left w-full text-sm"
+                      style={{ color: activeThreadId === thread.id ? "var(--accent-main)" : "var(--text-primary)" }}
+                      onClick={() => handleOpenThread(thread.id)}
+                    >
+                      {thread.title}
+                    </button>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
+                        {new Date(thread.updated_at).toLocaleString("zh-TW")}
+                      </span>
+                      <button
+                        className="text-[11px]"
+                        style={{ color: "var(--danger)" }}
+                        onClick={() => handleDeleteThread(thread.id)}
+                      >
+                        刪除
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
-
-              <ReadingResult reading={reading} isLoading={isLoading} onReset={handleReset} />
             </div>
-          )}
-        </main>
+          </aside>
+
+          <main className="flex flex-col items-center w-full gap-6">
+            <div className="phase-tag">狀態：{PHASE_LABEL[phase]}</div>
+
+            {(phase === "IDLE" || phase === "THINKING") && <QuestionForm onSubmit={handleSubmit} />}
+
+            {phase === "SHUFFLING" && <CardSpread cards={drawnCards} onAllFlipped={handleAllFlipped} />}
+
+            {phase === "COMPLETED" && (
+              <div className="flex flex-col items-center gap-8 w-full">
+                <div className="flex flex-wrap justify-center gap-4">
+                  {drawnCards.map((card) => (
+                    <div key={`${card.position}-${card.cardId}`} className="mini-card text-center px-4 py-2 rounded-lg">
+                      <div className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
+                        {card.position}
+                      </div>
+                      <div className="text-sm font-medium" style={{ color: "var(--accent-main)" }}>
+                        {card.name}
+                      </div>
+                      <div className="text-xs" style={{ color: card.orientation === "upright" ? "#8de3bd" : "#ff9f7f" }}>
+                        {card.orientation === "upright" ? "正位" : "逆位"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <ReadingResult reading={reading} isLoading={isLoading} onReset={handleReset} />
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );

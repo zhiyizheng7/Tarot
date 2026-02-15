@@ -1,41 +1,24 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { loadEnvConfig } from "@next/env";
+import { PrismaClient } from "@prisma/client";
 
-let supabaseClient: SupabaseClient | null = null;
+// In some dev flows (Turbopack/App Route), Prisma may initialize before env is hydrated.
+// Ensure .env.local/.env are loaded before PrismaClient is constructed.
+if (!process.env.DATABASE_URL) {
+  loadEnvConfig(process.cwd());
+}
 
-export function getSupabaseClient(): SupabaseClient {
-  if (supabaseClient) return supabaseClient;
+if (!process.env.DATABASE_URL) {
+  throw new Error("Missing DATABASE_URL. Please set it in .env.local");
+}
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase env vars: NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
-  }
-
-  supabaseClient = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-  return supabaseClient;
-}
-
-export interface ReadingThread {
-  id: string;
-  user_id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ReadingMessage {
-  id: string;
-  thread_id: string;
-  role: "user" | "assistant";
-  content: string;
-  aspect: string | null;
-  cards: unknown;
-  created_at: string;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }

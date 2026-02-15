@@ -17,40 +17,128 @@
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
-  --font-sans: var(--font-sans-tc);
+  --font-sans: "Avenir Next", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
 }
 
 body {
-  background:
-    radial-gradient(circle at 15% 20%, rgba(53, 106, 122, 0.28), transparent 45%),
-    radial-gradient(circle at 80% 15%, rgba(231, 159, 63, 0.12), transparent 40%),
-    linear-gradient(155deg, var(--bg-primary) 0%, var(--bg-deep) 65%, #041017 100%);
+  background: linear-gradient(155deg, var(--bg-primary) 0%, var(--bg-deep) 65%, #041017 100%);
   color: var(--text-primary);
-  font-family: var(--font-sans-tc), "Noto Sans TC", sans-serif;
+  font-family: "Avenir Next", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
   min-height: 100vh;
 }
 
 .title-serif {
-  font-family: var(--font-serif-tc), "Noto Serif TC", serif;
+  font-family: "Iowan Old Style", "STSong", "Noto Serif TC", "Times New Roman", serif;
 }
 
 .app-shell {
   isolation: isolate;
 }
 
+.global-nebula {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.98;
+}
+
+.global-nebula canvas,
+.hero-canvas-wrap canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+}
+
+.webgl-layout {
+  align-items: start;
+}
+
 .panel-wrap {
   padding: 1.75rem;
   border: 1px solid var(--panel-border);
   border-radius: 20px;
-  background: linear-gradient(165deg, rgba(13, 38, 48, 0.85) 0%, rgba(9, 28, 35, 0.86) 100%);
+  background: linear-gradient(165deg, rgba(10, 30, 38, 0.84) 0%, rgba(7, 23, 29, 0.88) 100%);
   box-shadow: 0 22px 60px rgba(2, 10, 14, 0.45);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
+}
+
+.hero-panel {
+  position: relative;
+  width: min(100%, 1120px);
+  height: 420px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(159, 181, 186, 0.28);
+  box-shadow: 0 24px 56px rgba(2, 10, 14, 0.52);
+  background: linear-gradient(180deg, rgba(8, 28, 36, 0.9) 0%, rgba(6, 20, 27, 0.9) 100%);
+}
+
+.hero-canvas-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 2.2rem;
+  background: linear-gradient(
+    95deg,
+    rgba(6, 20, 27, 0.78) 0%,
+    rgba(6, 20, 27, 0.3) 50%,
+    rgba(6, 20, 27, 0.05) 100%
+  );
+}
+
+.hero-kicker {
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c4dbe0;
+}
+
+.hero-title {
+  color: #f3c875;
+  font-size: clamp(2.6rem, 8vw, 5.2rem);
+  line-height: 1;
+}
+
+.hero-subtitle {
+  max-width: 45ch;
+  color: #deeaec;
+  font-size: 1.02rem;
+}
+
+.hero-fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(126, 202, 221, 0.26) 0%, transparent 48%),
+    radial-gradient(circle at 78% 40%, rgba(243, 200, 117, 0.24) 0%, transparent 44%),
+    linear-gradient(145deg, #0a2b36 0%, #071b23 60%, #041017 100%);
+}
+
+.hero-fallback-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  right: -72px;
+  bottom: -120px;
+  background: radial-gradient(circle, rgba(243, 200, 117, 0.35) 0%, transparent 72%);
 }
 
 .phase-tag {
   border: 1px solid var(--panel-border);
   background: rgba(9, 28, 35, 0.72);
-  color: var(--text-secondary);
+  color: #c5d9dd;
   border-radius: 999px;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
@@ -58,7 +146,7 @@ body {
 }
 
 .mini-card {
-  background: var(--panel-bg);
+  background: rgba(8, 24, 30, 0.72);
   border: 1px solid var(--panel-border);
 }
 
@@ -103,7 +191,7 @@ body {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
 .star {
@@ -311,7 +399,7 @@ body {
   color: var(--accent-main);
   margin-top: 1.2rem;
   margin-bottom: 0.4rem;
-  font-family: var(--font-serif-tc), "Noto Serif TC", serif;
+  font-family: "Iowan Old Style", "STSong", "Noto Serif TC", "Times New Roman", serif;
 }
 
 .result-h2 {
@@ -327,6 +415,19 @@ body {
 }
 
 @media (max-width: 640px) {
+  .hero-panel {
+    height: 250px;
+    border-radius: 16px;
+  }
+
+  .hero-overlay {
+    padding: 1.2rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 11vw, 3.2rem);
+  }
+
   .panel-wrap {
     padding: 1.2rem;
     border-radius: 16px;
