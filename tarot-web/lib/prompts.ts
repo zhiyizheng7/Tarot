@@ -8,6 +8,13 @@ const ASPECT_LABEL: Record<Aspect, string> = {
   core: "綜合",
 };
 
+const SUIT_LABEL: Record<string, string> = {
+  wands: "權杖",
+  cups: "聖杯",
+  swords: "寶劍",
+  pentacles: "錢幣",
+};
+
 function formatCard(card: CardWithData, aspect: Aspect): string {
   const orientationText = card.orientation === "upright" ? "正位" : "逆位";
 
@@ -22,8 +29,12 @@ function formatCard(card: CardWithData, aspect: Aspect): string {
   const aspectMeaning =
     aspect === "core" ? card.meaning.core : card.meaning[aspect];
 
+  const arcanaLine = card.arcanaType === "minor" && card.suit
+    ? `\n  牌組：小阿爾克那 — ${SUIT_LABEL[card.suit]}`
+    : `\n  牌組：大阿爾克那`;
+
   return `【${card.position}】${card.name}（${orientationText}）
-  元素：${card.element}
+  元素：${card.element}${arcanaLine}
   牌面描述：${card.image_description}
   象徵符號：
 ${symbolLines}
@@ -54,7 +65,7 @@ ${cardsSection}
 
 請依照以下結構進行分析：
 1. 整體概覽：簡要說明三張牌呈現的整體故事線與能量走向。
-2. 逐牌解析：針對每個時間位置（過去、現在、未來），結合牌面描述、象徵符號與色彩意涵，提供具體且有層次的解讀。
+2. 逐牌解析：針對每個時間位置（過去、現在、未來），結合牌面描述、象徵符號與色彩意涵，提供具體且有層次的解讀。若牌為小阿爾克那，請結合其牌組特性（權杖＝行動與熱情、聖杯＝情感與直覺、寶劍＝思維與挑戰、錢幣＝物質與穩定）進行分析。
 3. 牌與牌之間的關聯：說明三張牌之間的連結與故事發展脈絡。
 4. 具體行動建議：根據整體牌陣，提供 2-3 條明確可執行的行動建議。
 

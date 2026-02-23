@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { drawCards } from "@/lib/tarot";
 import { Aspect } from "@/lib/prompts";
 import QuestionForm from "@/components/QuestionForm";
+import CardPicker from "@/components/CardPicker";
 import CardSpread from "@/components/CardSpread";
 import ReadingResult from "@/components/ReadingResult";
-import majorArcana from "@/data/major_arcana.json";
 
-type Phase = "input" | "cards" | "reading";
+type Phase = "input" | "picking" | "cards" | "reading";
 
 interface DrawnCardWithName {
   cardId: number;
@@ -45,17 +44,13 @@ export default function Home() {
   function handleSubmit(q: string, a: Aspect) {
     setQuestion(q);
     setAspect(a);
-
-    // Draw cards on client side
-    const cards = drawCards();
-    const cardsWithNames: DrawnCardWithName[] = cards.map((c) => {
-      const cardData = majorArcana.major_arcana.find((m) => m.id === c.cardId)!;
-      return { ...c, name: cardData.name };
-    });
-
-    setDrawnCards(cardsWithNames);
-    setPhase("cards");
+    setPhase("picking");
   }
+
+  const handleCardsPicked = useCallback((cards: DrawnCardWithName[]) => {
+    setDrawnCards(cards);
+    setPhase("cards");
+  }, []);
 
   const handleAllFlipped = useCallback(async () => {
     setPhase("reading");
@@ -118,6 +113,10 @@ export default function Home() {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center w-full">
         {phase === "input" && <QuestionForm onSubmit={handleSubmit} />}
+
+        {phase === "picking" && (
+          <CardPicker onComplete={handleCardsPicked} />
+        )}
 
         {phase === "cards" && (
           <CardSpread cards={drawnCards} onAllFlipped={handleAllFlipped} />

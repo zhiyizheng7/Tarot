@@ -1,4 +1,4 @@
-import majorArcana from "@/data/major_arcana.json";
+import { ALL_CARDS, getCardById } from "@/data/deck";
 
 export interface DrawnCard {
   cardId: number;
@@ -8,6 +8,9 @@ export interface DrawnCard {
 
 export interface CardWithData extends DrawnCard {
   name: string;
+  arcanaType: "major" | "minor";
+  suit: "cups" | "wands" | "swords" | "pentacles" | null;
+  rank: string | null;
   element: string;
   image_description: string;
   symbols: Record<string, string>;
@@ -23,8 +26,7 @@ export interface CardWithData extends DrawnCard {
 const POSITIONS: Array<"過去" | "現在" | "未來"> = ["過去", "現在", "未來"];
 
 export function drawCards(): DrawnCard[] {
-  const cards = majorArcana.major_arcana;
-  const indices = cards.map((_, i) => i);
+  const indices = ALL_CARDS.map((_, i) => i);
 
   // Fisher-Yates shuffle
   for (let i = indices.length - 1; i > 0; i--) {
@@ -33,7 +35,7 @@ export function drawCards(): DrawnCard[] {
   }
 
   return POSITIONS.map((position, i) => ({
-    cardId: cards[indices[i]].id,
+    cardId: ALL_CARDS[indices[i]].id,
     position,
     orientation: Math.random() < 0.5 ? "upright" : "reversed",
   }));
@@ -43,16 +45,19 @@ export function getCardWithData(
   drawn: DrawnCard,
   aspect: "love" | "career" | "core"
 ): CardWithData {
-  const card = majorArcana.major_arcana.find((c) => c.id === drawn.cardId)!;
+  const card = getCardById(drawn.cardId)!;
   const meanings = card[drawn.orientation];
 
   return {
     ...drawn,
     name: card.name,
+    arcanaType: card.arcanaType,
+    suit: card.suit,
+    rank: card.rank,
     element: card.element,
     image_description: card.image_description,
-    symbols: card.symbols as unknown as Record<string, string>,
-    colors: card.colors as unknown as Record<string, string>,
+    symbols: card.symbols as Record<string, string>,
+    colors: card.colors as Record<string, string>,
     meaning: {
       core: meanings.core,
       love: meanings.love,

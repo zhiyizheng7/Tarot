@@ -3,6 +3,9 @@
     {
       "id": 0,
       "name": "愚人 (The Fool)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "風",
       "image_description": "一位年輕人站在懸崖邊緣，仰望天空，腳步即將踏入虛空。他一手持白玫瑰，肩上背著小包袱，腳邊有一隻小白狗望著他。",
       "symbols": {
@@ -32,6 +35,9 @@
     {
       "id": 1,
       "name": "魔術師 (The Magician)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "風",
       "image_description": "一位魔術師站在桌前，一手高舉權杖指向天空，另一手指向大地。桌上擺放著權杖、聖杯、寶劍和錢幣四種元素。",
       "symbols": {
@@ -61,6 +67,9 @@
     {
       "id": 2,
       "name": "女祭司 (The High Priestess)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "水",
       "image_description": "一位女祭司端坐在兩根柱子之間，手持卷軸，身後是一道飾有石榴與棕櫚的面紗，遮掩著未知的領域。",
       "symbols": {
@@ -91,6 +100,9 @@
     {
       "id": 3,
       "name": "女皇 (The Empress)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "土",
       "image_description": "一位雍容華貴的女皇坐在戶外的軟墊上，身邊是茂盛的麥田與瀑布，手持權杖，頭戴十二星冠。",
       "symbols": {
@@ -121,6 +133,9 @@
     {
       "id": 4,
       "name": "皇帝 (The Emperor)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "一位威嚴的皇帝端坐在石頭王座上，王座飾有公羊頭，手持權杖與圓球，背後是荒蕪的山脈。",
       "symbols": {
@@ -151,6 +166,9 @@
     {
       "id": 5,
       "name": "教皇 (The Hierophant)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "土",
       "image_description": "教皇穿著宗教法袍坐在兩根灰色柱子間，頭戴三重冠，一手舉起祝福手勢，另一手持三重十字權杖，腳下跪著兩位信徒。",
       "symbols": {
@@ -181,6 +199,9 @@
     {
       "id": 6,
       "name": "戀人 (The Lovers)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "風",
       "image_description": "一對裸身男女站在伊甸園中，女人身後是知識之樹與蛇，男人身後是生命之樹，天使拉斐爾在雲端祝福他們。",
       "symbols": {
@@ -211,6 +232,9 @@
     {
       "id": 7,
       "name": "戰車 (The Chariot)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "水",
       "image_description": "一位戰士駕著由一黑一白兩隻獅身人面獸拉動的戰車，身穿盔甲，頭頂星冠，背後是城市的城牆。",
       "symbols": {
@@ -241,6 +265,9 @@
     {
       "id": 8,
       "name": "力量 (Strength)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "一位穿白衣的女子溫柔地撫摸並馴服一頭獅子，她頭頂有無限符號，周圍是花園的鮮花。",
       "symbols": {
@@ -271,6 +298,9 @@
     {
       "id": 9,
       "name": "隱士 (The Hermit)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "土",
       "image_description": "一位穿著灰色斗篷的老者站在雪山頂上，一手持杖，另一手高舉著一盞內含六芒星的燈籠。",
       "symbols": {
@@ -301,6 +331,9 @@
     {
       "id": 10,
       "name": "命運之輪 (Wheel of Fortune)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "一個巨大的輪子漂浮在雲端，四角有四個帶翼生物，輪上有獅身人面獸、蛇與阿努比斯，輪緣刻有字母與符號。",
       "symbols": {
@@ -332,6 +365,9 @@
     {
       "id": 11,
       "name": "正義 (Justice)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "風",
       "image_description": "正義女神端坐在兩根柱子之間的石座上，一手持劍，一手持天秤，頭戴方形冠冕，身披紅袍。",
       "symbols": {
@@ -362,6 +398,9 @@
     {
       "id": 12,
       "name": "倒吊人 (The Hanged Man)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "水",
       "image_description": "一個人以單腳倒吊在T形木架上，雙手背在身後，頭部散發出金色光環，表情平靜祥和。",
       "symbols": {
@@ -392,6 +431,9 @@
     {
       "id": 13,
       "name": "死神 (Death)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "水",
       "image_description": "一位身披黑甲的骷髏騎士騎在白馬上，手持繪有白玫瑰的黑旗，地上有倒下的國王，遠方升起太陽。",
       "symbols": {
@@ -422,6 +464,9 @@
     {
       "id": 14,
       "name": "節制 (Temperance)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "一位天使站在池邊，一腳踏在水中，一腳踩在岸上，手持兩個杯子在流動中交換液體，胸前有三角形符號。",
       "symbols": {
@@ -452,6 +497,9 @@
     {
       "id": 15,
       "name": "惡魔 (The Devil)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "土",
       "image_description": "一個長著羊角與蝙蝠翅膀的惡魔端坐在黑色方座上，腳下鏈著一對裸身男女，他們頭上長著小角與尾巴。",
       "symbols": {
@@ -482,6 +530,9 @@
     {
       "id": 16,
       "name": "高塔 (The Tower)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "一座高塔被閃電擊中，塔頂的王冠被震飛，火焰從窗戶噴出，兩個人從塔中墜落，背景是漆黑的天空。",
       "symbols": {
@@ -512,6 +563,9 @@
     {
       "id": 17,
       "name": "星星 (The Star)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "風",
       "image_description": "一位裸身女子跪在池邊，一手將水倒入池中，一手將水倒在土地上，天空有一顆大星與七顆小星。",
       "symbols": {
@@ -542,6 +596,9 @@
     {
       "id": 18,
       "name": "月亮 (The Moon)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "水",
       "image_description": "月亮高掛在天空，散發著不安的光芒，一隻狗與一隻狼對月嚎叫，一隻龍蝦從水中爬出，遠方有兩座塔。",
       "symbols": {
@@ -572,6 +629,9 @@
     {
       "id": 19,
       "name": "太陽 (The Sun)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "巨大的太陽照耀著大地，一個赤裸的孩子騎在白馬上，舉著紅旗歡慶，背景是向日葵花園與灰色高牆。",
       "symbols": {
@@ -602,6 +662,9 @@
     {
       "id": 20,
       "name": "審判 (Judgement)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "火",
       "image_description": "天使加百列在雲端吹響號角，地上的人們從墳墓中復活，張開雙臂迎接神聖的召喚，背景是群山。",
       "symbols": {
@@ -632,6 +695,9 @@
     {
       "id": 21,
       "name": "世界 (The World)",
+      "arcanaType": "major",
+      "suit": null,
+      "rank": null,
       "element": "土",
       "image_description": "一位女子在橢圓形的桂冠花環中央舞蹈，手持兩根權杖，四角有四個帶翼生物，代表四元素與四福音。",
       "symbols": {
